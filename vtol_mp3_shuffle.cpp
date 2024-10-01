@@ -4,6 +4,7 @@
 #include<filesystem>
 #include<fstream>
 #include<random>
+#include<sstream>
 
 using namespace std;
 
@@ -33,38 +34,24 @@ int main() {
 
     file.close();
 
-    std::vector<std::string> track_list;
+    std::vector<fs::path> track_list;
 
     // iterate over song directory and store all filenames
     for (const auto& entry : fs::directory_iterator(vtol_music_dir)) {
         
         // store filenames ending in .mp3
-        if (is_mp3(entry.path().filename().string()))
-            track_list.push_back(entry.path().filename().string());
-    }
-
-    // iterate over stored list of filenames, removing non-mp3s
-    for (int i = 0; i < track_list.size(); i++) {
-        // check if file has prepended "vtol_" prefix
-        // allows user to add new files without manually adding prefix
-        if (track_list[i].substr(0, 5) == PREFIX) { 
-
-            // removes prefix from filenames that have it
-            track_list[i] = track_list[i].substr(8, track_list[i].size()); 
-            
+        if (is_mp3(entry.path().filename().string())) {
+            //std::cout << entry.path() << std::endl;
+            track_list.push_back(entry.path());
         }
-        std::cout << track_list[i] << std::endl; // remove me
     }
-
-    std::cout << std::endl << std::endl << std::endl;
-
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, track_list.size()-1);
     int rand_index;
     std::string temp;
 
-    // TODO: shuffle track list
+    // shuffle track list
     for (int i=0; i < track_list.size(); i++) {
         rand_index = distrib(gen);
         if (rand_index != i) {
@@ -72,13 +59,31 @@ int main() {
             track_list[i] = track_list[rand_index];
             track_list[rand_index] = temp;
         }
-    }
-    
-    for (const std::string& song : track_list) {
-        std::cout << song << std::endl;
-    }
-    // TODO: rename files in their random order
+    } 
+    // rename files in their random order
 
+    std::string track_name;
+    fs::path new_path;
+    std::ostringstream oss;
 
+    for (int i = 0; i < track_list.size(); i++) {
+        // get filename from path obj
+        track_name = track_list[i].filename().string();
+        // check if filename has prefix and remove it
+        if (track_name.substr(0, 5) == PREFIX) { 
+
+            // removes prefix from filenames that have it
+            track_name = track_name.substr(9, track_name.size());
+        }
+        oss.str("");
+        oss << vtol_music_dir << PREFIX << std::setfill('0') << std::setw(3) << (i + 1)
+            << " " <<  track_name;
+        new_path = oss.str();
+        try {
+            fs::rename(track_list[i], new_path);
+        } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << e.what() << std::endl;
+        }
+    }
     return 0;
 }
