@@ -3,12 +3,12 @@
 #include<iostream>
 #include<filesystem>
 #include<fstream>
+#include<random>
 
 using namespace std;
 
 namespace fs = std::filesystem;
 
-//#define FILEPATH "/Users/nathanhartzell/Desktop/vtol_mp3_stream copy"
 #define IMPORT_PATH "dir_path.txt"
 #define PREFIX "vtol_"
 
@@ -27,7 +27,6 @@ int main() {
 
     std::string vtol_music_dir;
     if (std::getline(file, vtol_music_dir)) {
-        std::cout << "Read line: " << vtol_music_dir << std::endl;
     } else {
         std::cerr << "Could not read a line from the file." << std::endl;
     }
@@ -52,12 +51,32 @@ int main() {
 
             // removes prefix from filenames that have it
             track_list[i] = track_list[i].substr(8, track_list[i].size()); 
-            std::cout << track_list[i] << std::endl; // remove me
+            
         }
+        std::cout << track_list[i] << std::endl; // remove me
     }
 
-    // TODO: shuffle track list
+    std::cout << std::endl << std::endl << std::endl;
 
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, track_list.size()-1);
+    int rand_index;
+    std::string temp;
+
+    // TODO: shuffle track list
+    for (int i=0; i < track_list.size(); i++) {
+        rand_index = distrib(gen);
+        if (rand_index != i) {
+            temp = track_list[i];
+            track_list[i] = track_list[rand_index];
+            track_list[rand_index] = temp;
+        }
+    }
+    
+    for (const std::string& song : track_list) {
+        std::cout << song << std::endl;
+    }
     // TODO: rename files in their random order
 
 
