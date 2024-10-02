@@ -49,7 +49,7 @@ int main() {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, track_list.size()-1);
     int rand_index;
-    std::string temp;
+    fs::path temp;
 
     // shuffle track list
     for (int i=0; i < track_list.size(); i++) {
